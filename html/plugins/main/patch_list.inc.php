@@ -42,7 +42,11 @@ if (!isset($index_check) || $index_check != "active"){
      $urgency = $row1['urgency'];
      $bug_url = $row1['bug_url'];
         if ($bug_url != ''){
-                if (stristr($bug_url,'debian')){
+                if (stristr($bug_url,'snyk.io')) {
+                        $url_array = explode("/",$bug_url);
+                        $bug = end($url_array);
+                        $url = "<td><a href='$bug_url' style='color:black'>Snyk ID #$bug</a></td>";
+                } else if (stristr($bug_url,'debian')){
                         $url_array = explode("/",$bug_url);
                         $cve = end($url_array);
                         $url = "<td><a href='$bug_url' style='color:black'>Debian $cve</a></td>";
@@ -65,6 +69,9 @@ if (!isset($index_check) || $index_check != "active"){
      else{
                 $urgency = "<td>$urgency</td>";
      }
+    if ($bug_url != '' && stristr($bug_url,'snyk.io')) {
+	$urgency = "<td>medium (nodejs)</td>";
+    }
      $table .= "                <tr>
                   <td><a href='${base_path}search/exact/$package_name_orig' style='color:green'>$package_name</a></td>
                   <td>$current</td>
