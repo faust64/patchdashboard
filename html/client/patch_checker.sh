@@ -64,12 +64,14 @@ if [[ "$node_dirs" -a -x /usr/local/bin/snyk ]]; then
 	for dir in $node_dirs
 	do
 		test -d $dir -a -s $dir/package.json || continue
+		cd $dir
 		snyk --dry-run test 2>/dev/null|awk '/Vulnerability found on/{print $NF}'|sort -u|while read line
 			do
 				dvers=$(snyk test $line 2>/dev/null|awk '/Should be upgraded to /{print $NF}')
 				iurl=$(snyk test $line 2>/dev/null|awk '/Info: /{print $2}')
 				echo "$line:::$dvers:::$iurl"|sed 's|@|:::|'
 			done >>/tmp/patch_$client_key
+		cd -
 	done
 	test -s /tmp/patch_$client_key && need_patched="true"
 fi
