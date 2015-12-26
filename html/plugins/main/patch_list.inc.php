@@ -11,6 +11,7 @@ if (!isset($index_check) || $index_check != "active"){
  }
  $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
  $package_count = 0;
+ $npm_count = 0;
  $base_path=BASE_PATH;
  mysql_select_db(DB_NAME,$link);
  $server_name = filter_var($_GET['server'],FILTER_SANITIZE_MAGIC_QUOTES);
@@ -29,13 +30,17 @@ if (!isset($index_check) || $index_check != "active"){
  $table = "";
  while ($row1 = mysql_fetch_assoc($res1)){
      $package_name = $row1['package_name'];
+     $bug_url = $row1['bug_url'];
      $package_name_orig = $package_name;
      if (in_array($package_name,$supressed)){
         $package_name .= " <strong>(SUPRESSED)</strong>";
-     }
-     else{
-        $apt_cmd .= " $package_name";
-        $package_count++;
+     } else {
+	if (stristr($bug_url, 'snyk.io') == FALSE) {
+	    $apt_cmd .= " $package_name";
+	} else {
+	    $npm_count++;
+	}
+	$package_count++;
      }
      $current = $row1['current'];
      $new = $row1['new'];
@@ -46,7 +51,7 @@ if (!isset($index_check) || $index_check != "active"){
                         $url_array = explode("/",$bug_url);
                         $bug = end($url_array);
                         $url = "<td><a href='$bug_url' style='color:black'>Snyk ID #$bug</a></td>";
-                } else if (stristr($bug_url,'debian')){
+		} else if (stristr($bug_url,'debian')){
                         $url_array = explode("/",$bug_url);
                         $cve = end($url_array);
                         $url = "<td><a href='$bug_url' style='color:black'>Debian $cve</a></td>";
@@ -69,18 +74,18 @@ if (!isset($index_check) || $index_check != "active"){
      else{
                 $urgency = "<td>$urgency</td>";
      }
-    if ($bug_url != '' && stristr($bug_url,'snyk.io')) {
-	$urgency = "<td>medium (nodejs)</td>";
-    }
+     if ($bug_url != '' && stristr($bug_url,'snyk.io')) {
+	 $urgency = "<td>medium (nodejs)</td>";
+     }
      $table .= "                <tr>
                   <td><a href='${base_path}search/exact/$package_name_orig' style='color:green'>$package_name</a></td>
                   <td>$current</td>
                   <td>$new</td>
-                  $urgency " . (isset($url) ? $url : '') . "
+                  $urgency " . (isset($url) ? $url : "") . "
                 </tr>
 ";
  }
-if ($package_count == 0){
+if ($package_count - $npm_count == 0){
         $apt_cmd = "";
 }
 else{

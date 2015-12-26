@@ -30,31 +30,36 @@ if (isset($client_key) && !empty($client_key)) {
         $to_reboot = $row1['reboot_cmd_sent'];
         $sql2 = "UPDATE `servers` SET `last_seen` = NOW() WHERE `client_key`='$client_key';";
         mysql_query($sql2);
-        $sql3 = "SELECT `package_name` FROM `patches` WHERE `to_upgrade`=1 and `upgraded`=0 AND `server_name`='$server_name';";
+        $sql3 = "SELECT `package_name`, `bug_url` FROM `patches` WHERE `to_upgrade`=1 and `upgraded`=0 AND `server_name`='$server_name';";
         $res3 = mysql_query($sql3);
         $suppression_array = array();
+        $cmd_array = array();
         $package_array = array();
         if (mysql_num_rows($res3) > 0){
             $suppression_sql = "SELECT * FROM `supressed` WHERE `server_name` IN (0,'$server_name');";
             $suppression_res = mysql_query($sql);
-            if (mysql_num_rows($suppression_res) > 0) {
-                while ($suppression_row = mysql_fetch_assoc($suppression_res)){
-                    if (isset($suppression_row['package_name'])) {
-                        $suppression_array[] = $suppression_row['package_name'];
-                    }
-                }
-                while ($row3 = mysql_fetch_assoc($res3)){
-                    $package_name = $row3['package_name'];
-                    if (!in_array($package_name, $supressed_array)){
-                        $package_array[] = $package_name;
-                    }
-                }
-                foreach ($package_array as $val){
-                    mysql_query("UPDATE `patches` SET `to_upgrade` = 0, `upgraded` = 1 WHERE `server_name` = '$server_name' AND `package_name` = '$val' LIMIT 1;");
-                }
-                $package_string = implode(" ", $package_array);
-            }
-        }
+	    if (mysql_num_rows($suppression_res) > 0) {
+		while ($suppression_row = mysql_fetch_assoc($suppression_res)){
+		    if (isset($suppression_row['package_name'])) {
+			$suppression_array[] = $suppression_row['package_name'];
+		    }
+		}
+		while ($row3 = mysql_fetch_assoc($res3)){
+		    $package_name = $row3['package_name'];
+		    $bug_url = $row3['bug_url'];
+		    if (!in_array($package_name, $supression_array)){
+			$package_array[] = $package_name;
+			if (stristr($bug_url,'snyk.io') == FALSE) {
+			    $cmd_array[] = $package_name;
+			}
+		    }
+		}
+		foreach ($package_array as $val){
+		    mysql_query("UPDATE `patches` SET `to_upgrade` = 0, `upgraded` = 1 WHERE `server_name` = '$server_name' AND `package_name` = '$val' LIMIT 1;");
+		}
+		$cmd_string = implode(" ", $cmd_array);
+	    }
+	}
         //CMD GOES HERE
         $company = YOUR_COMPANY;
         $company_sql = "SELECT * FROM `company` WHERE `display_name`='$company' LIMIT 1;";
@@ -75,13 +80,13 @@ if (isset($client_key) && !empty($client_key)) {
         else{
             $add_after = "";
         }
-        if (isset($package_string)) {
-            echo "key_to_check='$key_to_check'
-cmd_to_run='$cmd $package_string;$add_after'";
-        } else {
-            echo "key_to_check='$key_to_check'
+	if (isset($cmd_string)) {
+	    echo "key_to_check='$key_to_check'
+cmd_to_run='$cmd $cmd_string;$add_after'";
+	} else {
+	    echo "key_to_check='$key_to_check'
 cmd_to_run='$add_after'";
-        }
+	}
     }
 }
 mysql_close($link);
