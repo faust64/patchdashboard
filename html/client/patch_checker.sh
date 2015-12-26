@@ -67,7 +67,8 @@ if [[ "$node_dirs" -a -x /usr/local/bin/snyk ]]; then
 		cd $dir
 		snyk --dry-run test 2>/dev/null|awk '/Vulnerability found on/{print $NF}'|sort -u|while read line
 			do
-				dvers=$(snyk test $line 2>/dev/null|awk '/Should be upgraded to /{print $NF;exit;}' | cut -d@ -f2)
+				pname=`echo $line | cut -d@ -f1`
+				dvers=$(snyk test $line 2>/dev/null|awk "/Should be upgraded to .*$pname@/{print \$NF}" | tail -1 | cut -d@ -f2)
 				iurl=$(snyk test $line 2>/dev/null|awk '/Info: /{print $2;exit;}')
 				echo "$line:::$dvers:::$iurl"|sed 's|@|:::|'
 			done >>/tmp/patch_$client_key
