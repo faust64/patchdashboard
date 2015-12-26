@@ -60,9 +60,21 @@ elif [[ "$os" = "Linux" ]]; then
         echo "unspecified $os not supported"
         exit 0
 fi
+if [[ "$node_dirs" -a -x /usr/local/bin/snyk ]]; then
+	for dir in $node_dirs
+	do
+		test -d $dir -a -s $dir/package.json || continue
+		snyk --dry-run test 2>/dev/null|awk '/Vulnerability found on/{print $NF}'|sort -u|while read line
+			do
+				dvers=$(snyk test $line 2>/dev/null|awk '/Should be upgraded to /{print $NF}')
+				iurl=$(snyk test $line 2>/dev/null|awk '/Info: /{print $2}')
+				echo "$line:::$dvers:::$iurl"|sed 's|@|:::|'
+			done >>/tmp/patch_$client_key
+	done
+	test -s /tmp/patch_$client_key && need_patched="true"
+fi
 if [[ "$need_patched" == "true" ]]; then
         patch_list=$(cat /tmp/patch_$client_key)
         curl -k -s -H "X-CLIENT-KEY: $client_key" $submit_patch_uri -d "$patch_list"
         rm -rf /tmp/patch_$client_key > /dev/null 2>&1
 fi
-

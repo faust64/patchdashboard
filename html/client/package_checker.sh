@@ -41,6 +41,16 @@ elif [[ "$os" = "Linux" ]]; then
 	echo "unspecified $os not supported"
 	exit 0
 fi
+if [[ "$node_dirs" -a -x /usr/local/bin/snyk ]]; then
+	for dir in $node_dirs
+	do
+		test -d $dir || continue
+		add=$(npm list 2>/dev/null|sed -e 's|[ \t]*extraneous||' -e 's|[ \t]*(.*||'|awk '/@/{print $NF}'|sort -u|sed 's|@|:::|')
+		test -z "$add" && continue
+		data="$data
+$add"
+	done
+fi
 if [[ -z "$data" ]]; then
 	exit 0
 else
