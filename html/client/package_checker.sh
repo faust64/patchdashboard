@@ -46,7 +46,7 @@ if [[ "$node_dirs" -a -x /usr/local/bin/snyk ]]; then
 	do
 		test -d $dir -a -s $dir/package.json || continue
 		cd $dir
-		add=$(npm list 2>/dev/null|sed -e 's|[ \t]*extraneous||' -e 's|[ \t]*(.*||'|awk '/@/{print $NF}'|sort -u|sed 's|@|:::|')
+		add=$(npm list 2>/dev/null|sed -e 's|[ \t]*extraneous||' -e 's|[ \t]*(.*||'|awk '/@/{print $NF}'|sort -u|grep -v $dir|sed 's|@|:::|')
 		cd -
 		test -z "$add" && continue
 		data="$data
