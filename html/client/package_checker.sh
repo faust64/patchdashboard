@@ -1,5 +1,6 @@
 #!/bin/bash
 # generated installation key and server URI from install
+export PATH=/usr/local/bin:$PATH
 auth_key="__SERVER_AUTHKEY_SET_ME__"
 server_uri="__SERVER_URI_SET_ME__"
 submit_packages_uri="${server_uri}client/send_packages.php"
@@ -41,7 +42,7 @@ elif [[ "$os" = "Linux" ]]; then
 	echo "unspecified $os not supported"
 	exit 0
 fi
-if [[ "$node_dirs" -a -x /usr/local/bin/snyk ]]; then
+if test "$node_dirs" -a \( -x /usr/local/bin/npm -o -x /usr/bin/npm \); then
 	for dir in $node_dirs
 	do
 		test -d $dir -a -s $dir/package.json || continue

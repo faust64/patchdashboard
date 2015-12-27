@@ -1,7 +1,8 @@
 #!/bin/bash
-
 # generated installation key and server URI from install
+export PATH=/usr/local/bin:$PATH
 auth_key="__SERVER_AUTHKEY_SET_ME__"
+need_patched=false
 server_uri="__SERVER_URI_SET_ME__"
 submit_patch_uri="${server_uri}client/send_patches.php"
 # set client_path
@@ -36,7 +37,7 @@ fi
 os=$(echo $os|sed -e 's/[^a-zA-Z0-9]//g')
 # begin update checks
 if [[ "$os" = "CentOS" ]] || [[ "$os" = "Fedora" ]] || [[ "$os" = "RHEL" ]]; then
-	need_patched="true"
+	need_patched=true
         yum -q check-update| while read i
         do
                 i=$(echo $i) #this strips off yum's irritating use of whitespace
@@ -46,37 +47,35 @@ if [[ "$os" = "CentOS" ]] || [[ "$os" = "Fedora" ]] || [[ "$os" = "RHEL" ]]; the
                         UVERSION=${UVERSION%\ *}
                         PNAME=${i%%\ *}
                         PNAME=${PNAME%.*}
-                        #echo $(rpm -q "${PNAME}" --qf '%{NAME}:::%{VERSION}:::')${UVERSION}
                         patches_to_install=$(echo $(rpm -q "${PNAME}" --qf '%{NAME}:::%{VERSION}:::')${UVERSION})
                         echo "$patches_to_install" >> /tmp/patch_$client_key
                 fi
         done
 elif [[ "$os" = "Ubuntu" ]] || [[ "$os" = "Debian" ]]; then
-        need_patched="true"
-        #apt-get --just-print upgrade 2>&1 | perl -ne 'if (/Inst\s([\w,\-,\d,\.,~,:,\+]+)\s\[([\w,\-,\d,\.,~,:,\+]+)\]\s\(([\w,\-,\d,\.,~,:,\+]+)\)? /i) {print "$1:::$2:::$3\n"}'
+        need_patched=true
         patches_to_install=$(apt-get --just-print upgrade 2>&1 | perl -ne 'if (/Inst\s([\w,\-,\d,\.,~,:,\+]+)\s\[([\w,\-,\d,\.,~,:,\+]+)\]\s\(([\w,\-,\d,\.,~,:,\+]+)\)? /i) {print "$1:::$2:::$3\n"}')
 	echo "$patches_to_install" >> /tmp/patch_$client_key
 elif [[ "$os" = "Linux" ]]; then
         echo "unspecified $os not supported"
         exit 0
 fi
-if [[ "$node_dirs" -a -x /usr/local/bin/snyk ]]; then
+if test "$node_dirs" -a \( -x /usr/local/bin/snyk -o -x /usr/bin/snyk \); then
 	for dir in $node_dirs
 	do
 		test -d $dir -a -s $dir/package.json || continue
 		cd $dir
 		snyk --dry-run test 2>/dev/null|awk '/Vulnerability found on/{print $NF}'|sort -u|while read line
 			do
-				pname=`echo $line | cut -d@ -f1`
-				dvers=$(snyk test $line 2>/dev/null|awk "/Should be upgraded to .*$pname@/{print \$NF}" | tail -1 | cut -d@ -f2)
+				pname=`echo $line|cut -d@ -f1`
+				dvers=$(snyk test $line 2>/dev/null|awk "/Should be upgraded to .*$pname@/{print \$NF}"|tail -1|cut -d@ -f2)
 				iurl=$(snyk test $line 2>/dev/null|awk '/Info: /{print $2;exit;}')
 				echo "$line:::$dvers:::$iurl"|sed 's|@|:::|'
 			done >>/tmp/patch_$client_key
 		cd - >/dev/null
 	done
-	test -s /tmp/patch_$client_key && need_patched="true"
+	test -s /tmp/patch_$client_key && need_patched=true
 fi
-if [[ "$need_patched" == "true" ]]; then
+if $need_patched; then
         patch_list=$(cat /tmp/patch_$client_key)
         curl -k -s -H "X-CLIENT-KEY: $client_key" $submit_patch_uri -d "$patch_list"
         rm -rf /tmp/patch_$client_key > /dev/null 2>&1
