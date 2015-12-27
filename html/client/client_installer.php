@@ -11,7 +11,7 @@ $SERVER_URI = $protocol.$_SERVER['HTTP_HOST'].BASE_PATH;
 $script = "#!/bin/bash
 user=$(whoami)
 if [ \"\$user\" != \"root\" ]; then
-	echo -e \"You need to be root to run the installer.\nPlease run this: curl ${SERVER_URI}client/client-installer.php|sudo bash\"
+	echo -e \"You need to be root to run the installer.\nPlease run this: sudo curl ${SERVER_URI}client/client-installer.php|bash\"
 fi
 ls /opt/patch_manager/db.conf > /dev/null 2>&1
 if [[ \"$?\" = \"0\" ]]; then 
@@ -42,10 +42,12 @@ if [[ \"$?\" != \"0\" ]]; then
 fi
 grep \"\${client_path}check-in.sh\" \"/etc/cron.d/patch-manager\" > /dev/null 2>&1
 if [[ \"$?\" != \"0\" ]]; then
+	min=$(expr `ip addr|grep -v 127.0.0|awk '/inet /{print $2;exit}'` : '.*\.\([0-9]*\)/.*')
+	min=$(expr \$min % 60)
 	if [[ \"\$count_lines\" -gt \"0\" ]]; then
-		echo -e \"* * * * * root \${client_path}check-in.sh >> /dev/null 2>&1\" >>  /etc/cron.d/patch-manager
+		echo -e \"\$min * * * * root \${client_path}check-in.sh >/dev/null 2>&1\" >>/etc/cron.d/patch-manager
 	else
-		echo -e \"* * * * * root \${client_path}check-in.sh >> /dev/null 2>&1\" >  /etc/cron.d/patch-manager
+		echo -e \"\$min * * * * root \${client_path}check-in.sh >/dev/null 2>&1\" >/etc/cron.d/patch-manager
 	fi
 else
 	echo \"Crontab entry already exists in: /etc/cron.d/patch-manager\"
