@@ -2,12 +2,10 @@
 /*
  * Fail-safe check. Ensures that they go through the main page (and are authenticated to use this page
  */
-    if (!isset($index_check) || $index_check != "active"){ exit(); }
+    if (!isset($index_check) || $index_check != "active") { exit(); }
     $supressed = array("nadda");
     $supressed_list = "";
-    foreach($supressed as $val){
-	$supressed_list .= " '$val'";
-    }
+    foreach($supressed as $val) { $supressed_list .= " '$val'"; }
     $supressed_list = str_replace("' '","', '",$supressed_list);
     $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
     mysql_select_db(DB_NAME,$link);
@@ -48,7 +46,7 @@
     $total_count = 0;
     $server_count = 0;
     $base_path=BASE_PATH;
-    while ($row1 = mysql_fetch_assoc($res1)){
+    while ($row1 = mysql_fetch_assoc($res1)) {
 	$server_count++;
 	$server_name = $row1['server_name'];
 	$server_alias = $row1['server_alias'];
@@ -60,26 +58,25 @@
     mysql_close($link);
     $percent_needing_upgrade = round((($nsupressed_total / $server_count)*100));
     $percent_good_to_go = 100 - $percent_needing_upgrade;
-    if ($percent_good_to_go < 0){ $percent_good_to_go = 0; }
+    if ($percent_good_to_go < 0) { $percent_good_to_go = 0; }
 ?>
-        <div class="col-sm-9 col-md-9">
-          <h1 class="page-header">Patch List</h1>
-	    <div class="chart">
-                <div class="percentage" data-percent="<?php echo $percent_good_to_go;?>"><span><?php echo $percent_good_to_go;?></span>%</div>
-                <div class="label" style="color:#0000FF">Percent of servers not needing upgrades/patches</div>
-            </div>
-
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-		    <th><a href="<?php echo $base_path?><?php echo $toggle_sort_name?>"><img width=21px height=21px src="<?php echo $base_path?>img/sort.png"></a>&nbsp;Server Name (<?php echo $server_count;?> servers)</th>
-		    <th><a href="<?php echo $base_path?><?php echo $toggle_sort_count?>"><img width=21px height=21px src="<?php echo $base_path?>img/sort.png"></a>&nbsp;Patch Count (<?php echo $total_count;?> total patches available)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php echo $table;?>
-              </tbody>
-            </table>
-          </div>
-        </div>
+    <div class="col-sm-9 col-md-9">
+	<h1 class="page-header">Patch List</h1>
+	<div class="chart">
+	    <div class="percentage" data-percent="<?php echo $percent_good_to_go;?>"><span><?php echo $percent_good_to_go;?></span>%</div>
+	    <div class="label" style="color:#0000FF">Percent of servers not needing upgrades/patches</div>
+	</div>
+	<div class="table-responsive">
+	    <table class="table table-striped">
+		<thead>
+		    <tr>
+			<th><a href="<?php echo $base_path?><?php echo $toggle_sort_name?>"><img width=21px height=21px src="<?php echo $base_path?>img/sort.png"></a>&nbsp;Server Name (<?php echo $server_count;?> servers)</th>
+			<th><a href="<?php echo $base_path?><?php echo $toggle_sort_count?>"><img width=21px height=21px src="<?php echo $base_path?>img/sort.png"></a>&nbsp;Patch Count (<?php echo $total_count;?> total patches available)</th>
+		    </tr>
+		</thead>
+		<tbody>
+<?php echo $table;?>
+		</tbody>
+	    </table>
+	</div>
+    </div>
