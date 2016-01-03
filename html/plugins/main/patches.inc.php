@@ -45,7 +45,7 @@
     $table = "";
     $total_count = 0;
     $server_count = 0;
-    $base_path=BASE_PATH;
+    $base_path = BASE_PATH;
     while ($row1 = mysql_fetch_assoc($res1)) {
 	$server_count++;
 	$server_name = $row1['server_name'];

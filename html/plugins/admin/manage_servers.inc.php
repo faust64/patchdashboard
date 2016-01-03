@@ -46,6 +46,7 @@
     $order = "ORDER BY $orderfield $orderscheme";
     $sql = "SELECT * FROM servers $order;";
     $res = mysql_query($sql);
+    $base_path = BASE_PATH;
     $table = "";
     $distro_array = array();
     $distro_map_sql = "SELECT d.distro_name as distro_name,dv.version_num as version_num, dv.id as version_id,d.id as distro_id FROM distro_version dv LEFT JOIN distro d on d.id=dv.distro_id;";
