@@ -8,10 +8,10 @@
     $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
     $package_count = 0;
     $npm_count = 0;
-    $base_path=BASE_PATH;
+    $base_path = BASE_PATH;
     mysql_select_db(DB_NAME,$link);
     $server_name = filter_var($_GET['server'],FILTER_SANITIZE_MAGIC_QUOTES);
-    $distro_sql1 = "SELECT s.server_alias AS server_alias, d.upgrade_command AS upgrade_command from servers s, distro d where server_name = '$server_name' AND d.id = s.distro_id;";
+    $distro_sql1 = "SELECT s.server_alias AS server_alias, d.upgrade_command AS upgrade_command FROM servers s, distro d WHERE server_name = '$server_name' AND d.id = s.distro_id;";
     $distro_res1 = mysql_query($distro_sql1);
     $distro_row1 = mysql_fetch_array($distro_res1);
     $server_alias = $distro_row1['server_alias'];
@@ -43,7 +43,7 @@
 	$toggle_sort_urg = "patches/server/$server_name?orderby=urgency&order=asc";
     }
     $order = "ORDER BY $orderfield $orderscheme";
-    $sql1 = "select * from patches where server_name='$server_name' $order;";
+    $sql1 = "SELECT * FROM patches WHERE server_name='$server_name' $order;";
     $res1 = mysql_query($sql1);
     $table = "";
     while ($row1 = mysql_fetch_assoc($res1)) {

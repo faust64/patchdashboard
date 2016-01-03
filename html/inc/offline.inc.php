@@ -37,7 +37,7 @@
             <li><a href="/patch_manager2/patchdashboard/html/patches">Patch List</a></li>
           </ul>
           <div class="navbar-form navbar-right">
-            <input type="text" class="form-control" id="search" placeholder="Find Servers With Package..." onkeydown="if (event.keyCode == 13) NewURL(this.value);"></div>
+            <input type="text" class="form-control" id="search" placeholder="Lookup Package or Server..." onkeydown="if (event.keyCode == 13) NewURL(this.value);"></div>
         </div>
       </div>
     </nav>

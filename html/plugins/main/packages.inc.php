@@ -35,7 +35,7 @@
 	$toggle_sort_vers = "packages/server/$server_name?orderby=version&order=asc";
     }
     $order = "ORDER BY $orderfield $orderscheme";
-    $sql1 = "SELECT s.server_alias AS server_alias, p.package_name AS package_name, p.package_version AS package_version from servers s, patch_allpackages p WHERE s.server_name = '$server_name' AND p.server_name = s.server_name $order;";
+    $sql1 = "SELECT s.server_alias AS server_alias, p.package_name AS package_name, p.package_version AS package_version FROM servers s, patch_allpackages p WHERE s.server_name = '$server_name' AND p.server_name = s.server_name $order;";
     $res1 = mysql_query($sql1);
     $base_path = BASE_PATH;
     $server_alias = false;

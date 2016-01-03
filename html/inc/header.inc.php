@@ -54,7 +54,7 @@ if (!isset($index_check) || $index_check != "active") {
                         <li><a href="<?php echo BASE_PATH; ?>inc/logout.inc.php">Logout</a></li>
                     </ul>
                     <div class="navbar-form navbar-right">
-                        <input type="text" class="form-control" id="search" placeholder="Find Servers With Package..." onkeydown="if (event.keyCode == 13)
+                        <input type="text" class="form-control" id="search" placeholder="Lookup Package or Server..." onkeydown="if (event.keyCode == 13)
                         NewURL(this.value);"></div>
                 </div>
             </div>
