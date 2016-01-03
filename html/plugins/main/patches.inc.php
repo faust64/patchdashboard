@@ -17,19 +17,29 @@
     $nsupressed_total = $nsupressed_row['total_needing_patched'];
     if (isset($_GET['orderby'])) {
 	switch($_GET['orderby']) {
-	    case 'count': $orderfield = 'total';
-	    default: $orderfield = 'server_name';
+	    case 'total': $orderfield = 'total'; break;
+	    default: $orderfield = 'server_name'; break;
 	}
     } else {
 	$orderfield = 'server_name';
     }
     if (isset($_GET['order'])) {
 	switch ($_GET['order']) {
-	    case 'desc': $orderscheme = 'DESC';
-	    default: $orderscheme = 'ASC';
+	    case 'desc': $orderscheme = 'DESC'; break;
+	    default: $orderscheme = 'ASC'; break;
 	}
     } else {
 	$orderscheme = 'ASC';
+    }
+    if ($orderfield == 'server_name' && $orderscheme == 'ASC') {
+	$toggle_sort_name = "patches?orderby=server_name&order=desc";
+    } else {
+	$toggle_sort_name = "patches?orderby=server_name&order=asc";
+    }
+    if ($orderfield == 'total' && $orderscheme == 'ASC') {
+	$toggle_sort_count = "patches?orderby=total&order=desc";
+    } else {
+	$toggle_sort_count = "patches?orderby=total&order=asc";
     }
     $order = "ORDER BY $orderfield $orderscheme";
     $sql1 = "SELECT s.server_name AS server_name, s.server_alias AS server_alias, d.icon_path AS icon_path, COUNT(p.package_name) AS total from distro d, servers s LEFT JOIN patches p ON s.server_name = p.server_name WHERE s.trusted = 1 AND s.distro_id = d.id AND p.package_name NOT IN (SELECT package_name FROM supressed) GROUP BY s.server_name $order;";
@@ -63,8 +73,8 @@
             <table class="table table-striped">
               <thead>
                 <tr>
-                  <th>Server Name (<?php echo $server_count;?> servers)</th>
-                  <th>Patch Count (<?php echo $total_count;?> total patches available)</th>
+		    <th><a href="<?php echo $base_path?><?php echo $toggle_sort_name?>"><img width=21px height=21px src="<?php echo $base_path?>img/sort.png"></a>&nbsp;Server Name (<?php echo $server_count;?> servers)</th>
+		    <th><a href="<?php echo $base_path?><?php echo $toggle_sort_count?>"><img width=21px height=21px src="<?php echo $base_path?>img/sort.png"></a>&nbsp;Patch Count (<?php echo $total_count;?> total patches available)</th>
                 </tr>
               </thead>
               <tbody>
