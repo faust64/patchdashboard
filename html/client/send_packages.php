@@ -12,11 +12,13 @@ if (mysql_num_rows($client_check_res) == 1) {
     mysql_query("DELETE FROM `patch_allpackages` WHERE `server_name`='$server_name';");
     $package_array = explode("\n", $data);
     foreach ($package_array as $val) {
-        $tmp_array = explode(":::", $val);
-        $package_name = $tmp_array[0];
-        $package_version = $tmp_array[1];
-        $sql = "INSERT INTO patch_allpackages(server_name,package_name,package_version) VALUES('$server_name','$package_name','$package_version');";
-        mysql_query($sql);
+	$tmp_array = explode(":::", $val);
+	if (count($tmp_array) > 1) {
+	    $package_name = $tmp_array[0];
+	    $package_version = $tmp_array[1];
+	    $sql = "INSERT INTO patch_allpackages(server_name,package_name,package_version) VALUES('$server_name','$package_name','$package_version');";
+	    mysql_query($sql);
+	}
     }
 }
 mysql_close();
