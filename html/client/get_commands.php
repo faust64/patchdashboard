@@ -47,7 +47,7 @@ if (isset($client_key) && !empty($client_key)) {
 		while ($row3 = mysql_fetch_assoc($res3)){
 		    $package_name = $row3['package_name'];
 		    $bug_url = $row3['bug_url'];
-		    if (!in_array($package_name, $supression_array)){
+		    if (!in_array($package_name, $suppression_array)){
 			$package_array[] = $package_name;
 			if (stristr($bug_url,'snyk.io') == FALSE) {
 			    $cmd_array[] = $package_name;
