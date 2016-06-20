@@ -72,6 +72,12 @@ elif [[ "$os" = "Linux" ]]; then
 fi
 if [[ "$need_patched" = "true" ]]; then
 	patch_list=$(cat /tmp/$client_key)
-	curl -H "X-CLIENT-KEY: $client_key" $submit_patch_uri -d "$patch_list" > /dev/null 2>&1
+	if [[ "$1" = report ]]; then
+		if test "$patch_list"; then
+			echo "$patch_list"
+		fi
+	else
+		curl -H "X-CLIENT-KEY: $client_key" $submit_patch_uri -d "$patch_list" > /dev/null 2>&1
+	fi
 	rm -rf /tmp/$client_key > /dev/null 2>&1
 fi
