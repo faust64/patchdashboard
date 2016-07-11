@@ -91,6 +91,10 @@ INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('23'
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('24','8',2,'2020-05-01');
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('25','16.04_Desktop',1,'2021-04-30');
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('26','16.04_Server',1,'2021-04-30');
+INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('27','21',3,'2015-12-01');
+INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('28','22',3,'2016-07-19');
+INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('29','23',3,'2016-12-08');
+INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('30','24',3,'2017-08-01');
 
 CREATE TABLE `patches` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
