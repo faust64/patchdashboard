@@ -27,6 +27,7 @@ CREATE TABLE `servers` (
   `server_ip` varchar(60) NOT NULL,
   `distro_version` mediumint(8) NOT NULL,
   `client_key` varchar(255),
+  `thirdparty_server_id` varchar(256) DEFAULT NULL,
   `trusted` tinyint(1) NOT NULL DEFAULT 0,
   `last_seen` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `last_checked` datetime NOT NULL DEFAULT '2001-01-01 00:00:00',
