@@ -35,7 +35,7 @@ if (isset($client_key) && !empty($client_key)) {
 key_to_check='FALSE'
 check_patches='FALSE'";
     } else {
-        $time_sql = "SELECT * FROM `servers` WHERE `last_checked` < NOW() - INTERVAL 2 HOUR AND `client_key`='$client_key' LIMIT 1;";
+        $time_sql = "SELECT * FROM `servers` WHERE `last_checked` < NOW() - INTERVAL 20 MINUTE AND `client_key`='$client_key' LIMIT 1;";
         $time_res = mysql_query($time_sql);
         if (mysql_num_rows($time_res) == 1) {
             $CHECK_PATCHES = "TRUE";
