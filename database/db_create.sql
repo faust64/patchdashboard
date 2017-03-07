@@ -54,6 +54,7 @@ INSERT IGNORE INTO distro(id,distro_name,icon_path,upgrade_command) VALUES(3,'Fe
 INSERT IGNORE INTO distro(id,distro_name,icon_path,upgrade_command) VALUES(4,'CentOS','img/icon/centos.png','yum -y install');
 INSERT IGNORE INTO distro(id,distro_name,icon_path,upgrade_command) VALUES(5,'RHEL','img/icon/rhel.png','yum -y install');
 INSERT IGNORE INTO distro(id,distro_name,icon_path,upgrade_command) VALUES(6,'Oracle','img/icon/oracle.png','yum -y install');
+INSERT IGNORE INTO distro(id,distro_name,icon_path,upgrade_command) VALUES(7,'Devuan','img/icon/devuan.png','DEBIAN_FRONTEND=noninteractive apt-get -y install');
 
 CREATE TABLE `distro_version` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -95,6 +96,7 @@ INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('27'
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('28','22',3,'2016-07-19');
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('29','23',3,'2016-12-08');
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('30','24',3,'2017-08-01');
+INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('31','1',7,'2020-05-01');
 
 CREATE TABLE `patches` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
