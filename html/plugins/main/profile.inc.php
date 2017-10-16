@@ -6,12 +6,12 @@ if (!isset($index_check) || $index_check != "active"){
     exit();
 }
 $username = $_SESSION['user_id'];
-$link_edit_user = mysql_connect(DB_HOST,DB_USER,DB_PASS);
-mysql_select_db(DB_NAME,$link_edit_user);
+$link_edit_user = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
+mysqli_select_db($link_edit_user,DB_NAME);
 
 $sql_edit_user = "SELECT * FROM `users` WHERE `user_id`='$username' limit 1;";
-$res_edit_user = mysql_query($sql_edit_user) or die("ERROR<br /><br/><br/>".mysql_error());
-$row_edit_user = mysql_fetch_array($res_edit_user);
+$res_edit_user = mysqli_query($link_edit_user, $sql_edit_user) or die("ERROR<br /><br/><br/>".mysqli_error());
+$row_edit_user = mysqli_fetch_array($res_edit_user);
 $email_address = $row_edit_user['email'];
 $admin = $row_edit_user['admin'];
 $display_name = $row_edit_user['display_name'];

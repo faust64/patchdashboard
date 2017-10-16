@@ -45,7 +45,7 @@ function validate($string) {
         $value = stripslashes($string);
     }
     if (!is_numeric($string)) {
-        $string = mysql_real_escape_string($string);
+        $string = mysqli_real_escape_string($string);
     }
     return $string;
 }
@@ -91,24 +91,24 @@ function get_hostname($fqdn) {
  * Look up a wsus hostname in the vmps table and return the vmps id if and only if there's exactly one entry
  */
 function get_vmps_id($hostname) {
-    global $logger;
+    global $logger, $mysqllink;
 
     $logger->debug("Looking for vmps system id for hostname $hostname", 1);
 
     $query = "select id from systems where substring_index(last_hostname, '.', 1) = '$hostname';";
     $logger->debug("Executing: $query", 3);
-    $result = mysql_query($query);
+    $result = mysqli_query($mysqllink, $query);
     if (!$result) {
-        $logger->logit("Could not obtain vmps id for $hostname, " . mysql_error(), LOG_WARNING);
+        $logger->logit("Could not obtain vmps id for $hostname, " . mysqli_error(), LOG_WARNING);
         return false;
     }
-    $num_rows = mysql_num_rows($result); //TODO: exception handling
+    $num_rows = mysqli_num_rows($result); //TODO: exception handling
     if ($num_rows == 0) {
         //$logger->logit("No vmps id for system $hostname found", LOG_WARNING);
         $logger->logit("No vmps id for system $hostname found"); // don't flag as warning until 100% right, its flooding logcheck
         return false;
     } elseif ($num_rows == 1) {
-        $row = mysql_fetch_row($result); //TODO: exception handling
+        $row = mysqli_fetch_row($result); //TODO: exception handling
         $logger->debug("hostname $hostname has vmps id $row[0]", 1);
         return $row[0];
     } else {
@@ -122,23 +122,23 @@ function get_vmps_id($hostname) {
  * Empty all wsus tables.
  */
 function empty_tables() {
-    global $logger;
+    global $logger, $mysqllink;
 
     $logger->debug("Emptying wsus tables", 1);
     # As of MySQL 5.1.6, truncate requires the DROP privilege
-    #if( !mysql_query('truncate table wsus_systems;') ) {
-    if (!mysql_query('delete from wsus_systems;')) {
-        $logger->logit("Could not empty wsus_systems, " . mysql_error(), LOG_ERR);
+    #if( !mysqli_query($mysqllink, 'truncate table wsus_systems;') ) {
+    if (!mysqli_query($mysqllink, 'delete from wsus_systems;')) {
+        $logger->logit("Could not empty wsus_systems, " . mysqli_error(), LOG_ERR);
         return false;
     }
-    #if( !mysql_query('truncate table wsus_neededUpdates;') ) {
-    if (!mysql_query('delete from wsus_neededUpdates;')) {
-        $logger->logit("Could not empty wsus_neededUpdates, " . mysql_error(), LOG_ERR);
+    #if( !mysqli_query($mysqllink, 'truncate table wsus_neededUpdates;') ) {
+    if (!mysqli_query($mysqllink, 'delete from wsus_neededUpdates;')) {
+        $logger->logit("Could not empty wsus_neededUpdates, " . mysqli_error(), LOG_ERR);
         return false;
     }
-    #if( !mysql_query('truncate table wsus_systemToUpdates;') ) {
-    if (!mysql_query('delete from wsus_systemToUpdates;')) {
-        $logger->logit("Could not empty wsus_systemToUpdate, " . mysql_error(), LOG_ERR);
+    #if( !mysqli_query($mysqllink, 'truncate table wsus_systemToUpdates;') ) {
+    if (!mysqli_query($mysqllink, 'delete from wsus_systemToUpdates;')) {
+        $logger->logit("Could not empty wsus_systemToUpdate, " . mysqli_error(), LOG_ERR);
         return false;
     }
 
@@ -149,7 +149,7 @@ function empty_tables() {
  * Get global list of needed updates from wsus db and store in openac db
  */
 function get_global_update_list() {
-    global $logger, $timestamp;
+    global $logger, $timestamp, $mysqllink;
 
     // A summarizationstate of 4 references updates that a properly installed. These are the only ones we are not interested in. Languageid 1033 is english, thus we only fetch the english descriptions for the udpates
     $query = "select distinct u.localupdateid, lp.title, lp.description, p.msrcseverity, p.creationdate, p.receivedfromcreatorservice from susdb.dbo.tbupdatestatuspercomputer us	left join susdb.dbo.tbupdate u on us.localupdateid = u.localupdateid left join dbo.tbrevision r on u.localupdateid = r.localupdateid	left join dbo.tbproperty p on r.revisionid = p.revisionid	left join dbo.tblocalizedpropertyforrevision lpr on r.revisionid = lpr.revisionid left join dbo.tblocalizedproperty lp on lpr.localizedpropertyid = lp.localizedpropertyid where (us.summarizationstate <> 4) and (us.summarizationstate <> 1) and lpr.languageid = 1033 and r.revisionid = (select max(r.revisionid) from tbrevision r where r.localupdateid = u.localupdateid)";
@@ -166,8 +166,8 @@ function get_global_update_list() {
         $query = sprintf("insert into wsus_neededUpdates(localupdateid, title, description, msrcseverity, creationdate, receiveddate, lastsync) values('%s', '%s', '%s', '%s', '%s', '%s', '%s');", validate($row['localupdateid']), validate($row['title']), validate($row['description']), validate($row['msrcseverity']), convert_date($row['creationdate']), convert_date($row['receivedfromcreatorservice']), $timestamp);
         $logger->debug("Executing: $query", 3);
 
-        if (!mysql_query($query)) {
-            $logger->logit("Could insert update list into vmps db, " . mysql_error(), LOG_ERR);
+        if (!mysqli_query($mysqllink, $query)) {
+            $logger->logit("Could insert update list into vmps db, " . mysqli_error(), LOG_ERR);
             return false;
         }
     }
@@ -179,7 +179,7 @@ function get_global_update_list() {
  * Obtain list of system which are registerd in the wsus server, fetch their status for each  necessary update and write everything into the vmps db
  */
 function get_systems() {
-    global $logger, $timestamp;
+    global $logger, $timestamp, $mysqllink;
 
     $query = "select t.targetid, t.fulldomainname, t.ipaddress, t.lastreportedstatustime, s.notinstalled, s.downloaded, s.installedpendingreboot, s.failed, d.computermake, d.computermodel, o.oslongname from dbo.tbcomputertarget t left join dbo.tbcomputersummaryformicrosoftupdates s on t.targetid = s.targetid left join dbo.tbcomputertargetdetail d on t.targetid = d.targetid left join dbo.tbosmap o on (d.osminorversion = o.osminorversion and d.osmajorversion = o.osmajorversion and d.osservicepackmajornumber = o.osservicepackmajornumber) where (o.processorarchitecture is null or o.processorarchitecture = 1)";
 
@@ -209,8 +209,8 @@ function get_systems() {
         $query = sprintf("insert into wsus_systems values('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');", $id, $hostname, validate($sys_row['ipaddress']), convert_date($sys_row['lastreportedstatustime']), validate($sys_row['oslongname']), validate($sys_row['computermake']), validate($sys_row['computermodel']), validate($sys_row['notinstalled']), validate($sys_row['downloaded']), validate($sys_row['installedpendingreboot']), validate($sys_row['failed']), $timestamp);
 
         $logger->debug("Executing: $query", 3);
-        if (!mysql_query($query)) {
-            $logger->logit("Could not insert system $hostname, " . mysql_error(), LOG_WARNING);
+        if (!mysqli_query($mysqllink, $query)) {
+            $logger->logit("Could not insert system $hostname, " . mysqli_error(), LOG_WARNING);
             continue;
         }
 
@@ -218,7 +218,7 @@ function get_systems() {
         while ($update_row = mssql_fetch_assoc($result_update)) {
             $query = sprintf("insert into wsus_systemToUpdates(sid, localupdateid, lastsync) values('%s', '%s', '%s');", $id, validate($update_row['localupdateid']), $timestamp);
             $logger->debug("Executing $query", 3);
-            if (!mysql_query($query)) {
+            if (!mysqli_query($mysqllink, $query)) {
                 $logger->logit("Could not insert update relation $id, " . $update_row['localupdateid'], LOG_WARNING);
             }
         }
@@ -231,15 +231,15 @@ function get_systems() {
  *
  */
 function cleanup() {
-    global $logger;
+    global $logger, $mysqllink;
 
-    // TODO: exception handling	
+    // TODO: exception handling
 
     mssql_close();
-    mysql_close();
+    mysqli_close($mysqllink);
 
     $logger->logit("Done syncing WSUS");
 
     exit;
 }
-?>	
+?>

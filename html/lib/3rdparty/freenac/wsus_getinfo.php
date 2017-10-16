@@ -62,7 +62,7 @@ function validate($string) {
         $value = stripslashes($string);
     }
     if (!is_numeric($string)) {
-        $string = mysql_real_escape_string($string);
+        $string = mysqli_real_escape_string($string);
     }
     return $string;
 }
@@ -71,10 +71,11 @@ function validate($string) {
  * Executes query and displays error message if any
  */
 function execute_query($query) {
-    db_connect();
-    $res = mysql_query($query);
+    $link = db_connect();
+    $res = mysqli_query($link, $query);
+    mysqli_close($link);
     if (!$res) {
-        message("Cannot execute query $query because " . mysql_error(), 2);
+        message("Cannot execute query $query because " . mysqli_error(), 2);
         return false;
     }
     return $res;
@@ -157,7 +158,7 @@ function wsus_get_osid($majv, $minv, $build, $spmaj, $spmin, $processor) {
     message("Executing: " . $query, 2);
     $my_res = execute_query($query);
     if ($my_res) {
-        $my_result = mysql_fetch_array($my_res, MYSQL_ASSOC);
+        $my_result = mysqli_fetch_array($my_res, MYSQL_ASSOC);
         if (dbwsus_connect()) {
             $query = sprintf("select osid from tbosmap where osmajorversion='%s' and osminorversion='%s' and osbuildnumber='%s' and osservicepackmajornumber='%s' and osservicepackminornumber='%s' and processorarchitecture='%s'", $majv, $minv, $build, $spmaj, $spmin, $my_result['pid']);
             message("Executing: " . $query, 2);
@@ -247,7 +248,7 @@ function wsus_dump_updates_for_computers() {
     message("Executing: " . $query, 2);
     $my_res = execute_query($query);
     if ($my_res) {
-        while ($row = mysql_fetch_array($my_res, MYSQL_ASSOC)) {
+        while ($row = mysqli_fetch_array($my_res, MYSQL_ASSOC)) {
             wsus_get_updates_per_computer($row['TargetID']);
         }
         return true;
@@ -264,14 +265,14 @@ function connect_data() {
     message("Executing: " . $query, 2);
     $my_res = execute_query($query);
     if ($my_res) {
-        while ($row = mysql_fetch_array($my_res, MYSQL_ASSOC)) {
+        while ($row = mysqli_fetch_array($my_res, MYSQL_ASSOC)) {
             if ((!empty($row['name'])) && (strcasecmp($row['name'], 'unknown') != 0)) {
                 $query = "update nac_wsuscomputertarget set sid=" . $row['id'] . " where FullDomainName like '" . $row['name'] . "'";
                 message("Executing: " . $query, 2);
                 execute_query($query);
-                if (mysql_affected_rows() == 1)
+                if (mysqli_affected_rows() == 1)
                     message("Updated patch information for host {$row['name']}", 0);
-                else if (mysql_affected_rows() > 1)
+                else if (mysqli_affected_rows() > 1)
                     message("Possible duplicates in database for host {$row['name']}", 0);
             } else
                 continue;

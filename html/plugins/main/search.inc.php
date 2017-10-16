@@ -4,8 +4,8 @@
  */
     if (!isset($index_check) || $index_check != "active") { exit(); }
     include 'inc/supressed_patches.inc.php';
-    $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
-    mysql_select_db(DB_NAME,$link);
+    $link = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
+    mysqli_select_db($link,DB_NAME);
     $search = filter_var($_GET['package'],FILTER_SANITIZE_MAGIC_QUOTES);
     $emptytab = "<tr><td colspan=3><div align='center'><i>no matching record</i></div></td></tr>";
     if (isset($_GET['exact']) && $_GET['exact'] == "true") {
@@ -15,19 +15,19 @@
 	$sql1 = "SELECT package_name, package_version, server_name FROM patch_allpackages WHERE package_name LIKE '%$search%' ORDER BY package_name;";
 	$sql2 = "SELECT s.server_name AS server_name, s.server_group AS server_group, COUNT(p.package_name) AS patches_count FROM servers s LEFT JOIN patches p ON s.server_name = p.server_name WHERE (s.server_name LIKE '%$search%' OR s.server_alias LIKE '%$search%' OR s.server_group LIKE '%$search%') AND p.package_name NOT IN (SELECT package_name FROM supressed) GROUP BY s.server_name ORDER BY s.server_name;";
     }
-    $res1 = mysql_query($sql1);
-    $res2 = mysql_query($sql2);
+    $res1 = mysqli_query($link, $sql1);
+    $res2 = mysqli_query($link, $sql2);
     $countpkg = $counthost = 0;
     $base_path = BASE_PATH;
     $tablepkg = $tablehost = "";
-    while ($row1 = mysql_fetch_assoc($res1)) {
+    while ($row1 = mysqli_fetch_assoc($res1)) {
 	$countpkg++;
 	$package_name = $row1['package_name'];
 	$package_version = $row1['package_version'];
 	$server_name = $row1['server_name'];
 	$tablepkg .= "<tr><td><a href='${base_path}patches/server/$server_name' style='color:black'>$server_name</a></td><td><a href='${base_path}search/exact/$package_name' style='color:green'>$package_name</a></td><td>$package_version</td></tr>";
     }
-    while ($row2 = mysql_fetch_assoc($res2)) {
+    while ($row2 = mysqli_fetch_assoc($res2)) {
 	$counthost++;
 	$server_name = $row2['server_name'];
 	$server_group = $row2['server_group'];

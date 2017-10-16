@@ -37,14 +37,14 @@ if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == true) {
             }
             $replacement_parts = implode(", ", $sql_array);
             $sql = "UPDATE `users` SET $replacement_parts WHERE `user_id`='$username' AND id=$id LIMIT 1;";
-            $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
-            mysql_select_db(DB_NAME,$link);
-            mysql_query($sql);
+            $link = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
+            mysqli_select_db($link, DB_NAME);
+            mysqli_query($link, $sql);
             $username_sql = "SELECT `user_id` FROM `users` WHERE `id`=$id LIMIT 1;";
-            $username_res = mysql_query($username_sql);
-            $username_row = mysql_fetch_array($username_res);
+            $username_res = mysqli_query($link, $username_sql);
+            $username_row = mysqli_fetch_array($username_res);
             $username = $username_row['user_id'];
-            mysql_close($link);
+            mysqli_close($link);
             $_SESSION['good_notice'] = "$username modified! That wasn't so bad, now was it?";
             sleep(1);
             header('location:'.BASE_PATH."edit_user?id=$id");

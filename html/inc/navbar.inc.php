@@ -6,12 +6,12 @@ if (!isset($index_check) || $index_check != "active"){
     exit();
 }
 $patch_list_sql = "SELECT count(*) as total_found FROM `patches` p LEFT JOIN servers s on s.server_name = p.server_name WHERE s.trusted = 1 and p.upgraded=0 and p.package_name !='';";
-$patch_list_link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
-mysql_select_db(DB_NAME,$patch_list_link);
-$patch_list_res = mysql_query($patch_list_sql);
-$patch_list_row = mysql_fetch_array($patch_list_res);
+$patch_list_link = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
+mysqli_select_db($patch_list_link, DB_NAME);
+$patch_list_res = mysqli_query($patch_list_link, $patch_list_sql);
+$patch_list_row = mysqli_fetch_array($patch_list_res);
 $patches_to_apply_count = $patch_list_row['total_found'];
-mysql_close($patch_list_link);
+mysqli_close($patch_list_link);
 $data = "";
 foreach ($navbar_array as $key=>$val){
     $plugin2 = $key;

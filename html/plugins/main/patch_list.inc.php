@@ -5,15 +5,15 @@
     if (!isset($index_check) || $index_check != "active") { exit(); }
     include 'inc/supressed_patches.inc.php';
     if (!isset($supressed)) { $supressed = array(); }
-    $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
+    $link = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
     $package_count = 0;
     $npm_count = 0;
     $base_path = BASE_PATH;
-    mysql_select_db(DB_NAME,$link);
+    mysqli_select_db($link,DB_NAME);
     $server_name = filter_var($_GET['server'],FILTER_SANITIZE_MAGIC_QUOTES);
     $distro_sql1 = "SELECT s.server_alias AS server_alias, s.id AS server_id, d.upgrade_command AS upgrade_command FROM servers s, distro d WHERE server_name = '$server_name' AND d.id = s.distro_id;";
-    $distro_res1 = mysql_query($distro_sql1);
-    $distro_row1 = mysql_fetch_array($distro_res1);
+    $distro_res1 = mysqli_query($link, $distro_sql1);
+    $distro_row1 = mysqli_fetch_array($distro_res1);
     $server_alias = $distro_row1['server_alias'];
     $id = $distro_row1['server_id'];
     $apt_cmd = $distro_row1['upgrade_command'];
@@ -45,9 +45,9 @@
     }
     $order = "ORDER BY $orderfield $orderscheme";
     $sql1 = "SELECT * FROM patches WHERE server_name='$server_name' $order;";
-    $res1 = mysql_query($sql1);
+    $res1 = mysqli_query($link, $sql1);
     $table = "";
-    while ($row1 = mysql_fetch_assoc($res1)) {
+    while ($row1 = mysqli_fetch_assoc($res1)) {
 	$package_name = $row1['package_name'];
 	$bug_url = $row1['bug_url'];
 	$package_name_orig = $package_name;

@@ -4,8 +4,8 @@
  */
     if (!isset($index_check) || $index_check != "active") { exit(); }
     include 'inc/supressed_patches.inc.php';
-    $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
-    mysql_select_db(DB_NAME,$link);
+    $link = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
+    mysqli_select_db($link,DB_NAME);
     $server_name = filter_var($_GET['server'],FILTER_SANITIZE_MAGIC_QUOTES);
     $table = "";
     if (isset($_GET['orderby'])) {
@@ -36,10 +36,10 @@
     }
     $order = "ORDER BY $orderfield $orderscheme";
     $sql1 = "SELECT s.server_alias AS server_alias, p.package_name AS package_name, p.package_version AS package_version FROM servers s, patch_allpackages p WHERE s.server_name = '$server_name' AND p.server_name = s.server_name $order;";
-    $res1 = mysql_query($sql1);
+    $res1 = mysqli_query($link, $sql1);
     $base_path = BASE_PATH;
     $server_alias = false;
-    while ($row1 = mysql_fetch_assoc($res1)) {
+    while ($row1 = mysqli_fetch_assoc($res1)) {
 	if ($server_alias == false) { $server_alias = $row1['server_alias']; }
 	$package_name = $row1['package_name'];
 	$package_version = $row1['package_version'];

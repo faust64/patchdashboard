@@ -3,8 +3,8 @@
  * Fail-safe check. Ensures that they go through the main page (and are authenticated to use this page
  */
     if (!isset($index_check) || $index_check != "active") { exit(); }
-    $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
-    mysql_select_db(DB_NAME,$link);
+    $link = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
+    mysqli_select_db($link, DB_NAME);
     if (isset($_GET['orderby'])) {
 	switch($_GET['orderby']) {
 	    case 'group': $orderfield = 'admin'; break;
@@ -51,10 +51,10 @@
     }
     $order = "ORDER BY $orderfield $orderscheme";
     $sql = "SELECT * FROM users $order;";
-    $res = mysql_query($sql);
+    $res = mysqli_query($link, $sql);
     $base_path = BASE_PATH;
     $table = "";
-    while ($row = mysql_fetch_assoc($res)) {
+    while ($row = mysqli_fetch_assoc($res)) {
 	$id = $row['id'];
 	$username = $row['user_id'];
 	$active = $row['active'];

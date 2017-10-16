@@ -3,8 +3,8 @@
  * Fail-safe check. Ensures that they go through the main page (and are authenticated to use this page
  */
     if (!isset($index_check) || $index_check != "active") { exit(); }
-    $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
-    mysql_select_db(DB_NAME,$link);
+    $link = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
+    mysqli_select_db($link, DB_NAME);
     if (isset($_GET['orderby'])) {
 	switch($_GET['orderby']) {
 	    case 'group': $orderfield = 'server_group'; break;
@@ -45,16 +45,16 @@
     }
     $order = "ORDER BY $orderfield $orderscheme";
     $sql = "SELECT * FROM servers $order;";
-    $res = mysql_query($sql);
+    $res = mysqli_query($link, $sql);
     $base_path = BASE_PATH;
     $table = "";
     $distro_array = array();
     $distro_map_sql = "SELECT d.distro_name as distro_name,dv.version_num as version_num, dv.id as version_id,d.id as distro_id FROM distro_version dv LEFT JOIN distro d on d.id=dv.distro_id;";
-    $distro_map_res = mysql_query($distro_map_sql);
-    while ($distro_map_row = mysql_fetch_assoc($distro_map_res)) {
+    $distro_map_res = mysqli_query($link, $distro_map_sql);
+    while ($distro_map_row = mysqli_fetch_assoc($distro_map_res)) {
 	$distro_array[$distro_map_row['distro_id']][$distro_map_row['version_id']] = str_replace("_"," ",$distro_map_row['distro_name']." ".$distro_map_row['version_num']);
     }
-    while ($row = mysql_fetch_assoc($res)) {
+    while ($row = mysqli_fetch_assoc($res)) {
 	$id = $row['id'];
 	$server_name = $row['server_name'];
 	$server_alias = $row['server_alias'];

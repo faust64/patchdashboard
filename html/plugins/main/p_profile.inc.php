@@ -29,10 +29,10 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == true) {
         if (count($sql_array) > 0) {
             $replacement_parts = implode(", ", $sql_array);
             $sql = "UPDATE `users` SET $replacement_parts WHERE `user_id`='$username' AND id=$id LIMIT 1;";
-            $link = mysql_connect(DB_HOST, DB_USER, DB_PASS);
-            mysql_select_db(DB_NAME, $link);
-            mysql_query($sql);
-            mysql_close($link);
+            $link = mysqli_connect(DB_HOST, DB_USER, DB_PASS);
+            mysqli_select_db($link, DB_NAME);
+            mysqli_query($link, $sql);
+            mysqli_close($link);
             $_SESSION['good_notice'] = "Profile modified! All your base are belong to us!";
             sleep(1);
             header('location:' . BASE_PATH . "profile");

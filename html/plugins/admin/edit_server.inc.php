@@ -17,15 +17,15 @@ if (!isset($id) || empty($id) || !is_numeric($id)) {
     </div>
     <?php
 } else {
-    $link_edit_user = mysql_connect(DB_HOST, DB_USER, DB_PASS);
-    mysql_select_db(DB_NAME, $link_edit_user);
+    $link_edit_user = mysqli_connect(DB_HOST, DB_USER, DB_PASS);
+    mysqli_select_db($link_edit_user, DB_NAME);
     $distro_map_sql = "SELECT d.distro_name as distro_name,dv.version_num as version_num, dv.id as version_id,d.id as distro_id FROM distro_version dv LEFT JOIN distro d on d.id=dv.distro_id;";
-    $distro_map_res = mysql_query($distro_map_sql);
+    $distro_map_res = mysqli_query($link_edit_user, $distro_map_sql);
     $select_html = "<select class='form-control custom' name='distro_ver_id'>";
 
     $sql_edit_server = "SELECT * FROM `servers` WHERE id=$id limit 1;";
-    $res_edit_server = mysql_query($sql_edit_server);
-    $row = mysql_fetch_array($res_edit_server);
+    $res_edit_server = mysqli_query($link_edit_user, $sql_edit_server);
+    $row = mysqli_fetch_array($res_edit_server);
     $id = $row['id'];
     $server_name = $row['server_name'];
     $server_alias = $row['server_alias'];
@@ -36,7 +36,7 @@ if (!isset($id) || empty($id) || !is_numeric($id)) {
     $seen = $row['last_seen'];
     $trusted = $row['trusted'];
     $distro_version_main = $row['distro_version'];
-    while ($distro_map_row = mysql_fetch_assoc($distro_map_res)) {
+    while ($distro_map_row = mysqli_fetch_assoc($distro_map_res)) {
         $distro_id = $distro_map_row['distro_id'];
         $distro_ver_id = $distro_map_row['version_id'];
         $distro_ver_name = str_replace("_", " ", $distro_map_row['distro_name'] . " " . $distro_map_row['version_num']);

@@ -25,10 +25,10 @@ if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == true) {
                 $alert = 0;
             }
             $sql = "INSERT INTO `users`(`user_id`,`display_name`,`email`,`admin`,`password`,`receive_alerts`) VALUES('$username','$display_name','$email','$admin','$encrypted_pass','$alert');";
-            $link = mysql_connect(DB_HOST,DB_USER,DB_PASS);
-            mysql_select_db(DB_NAME,$link);
-            mysql_query($sql);
-            mysql_close($link);
+            $link = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
+            mysqli_select_db($link, DB_NAME);
+            mysqli_query($link, $sql);
+            mysqli_close($link);
             $_SESSION['good_notice'] = "$username added! Now, I hope you aren't paying them too much...";
             header('location:'.BASE_PATH.'add_user');
         }
