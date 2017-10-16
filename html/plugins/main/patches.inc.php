@@ -56,7 +56,7 @@
 	$table .= "<tr><td><a href='{$base_path}patches/server/$server_name'><img src='$dist_img' height='32' width='32' border='0'>&nbsp;$server_alias</a></td><td>$count</td></tr>";
     }
     mysqli_close($link);
-    $percent_needing_upgrade = round((($nsupressed_total / $server_count)*100));
+    $percent_needing_upgrade = $server_count == 0 ? 0 : round((($nsupressed_total / $server_count)*100));
     $percent_good_to_go = 100 - $percent_needing_upgrade;
     if ($percent_good_to_go < 0) { $percent_good_to_go = 0; }
 ?>
