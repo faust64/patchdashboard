@@ -202,7 +202,7 @@ function OSInstall()
 
 	if test "$os" = Ubuntu -o "$os" = Debian -o "$os" = Devuan -o "$os" = Raspbian -o "$os" = Linux; then
 		apache_exists=$(which apache2)
-		php5_exists=$(which php)
+		php_exists=$(which php)
 		mysqld_exists=$(which mysqld)
 		rsync_exists=$(which rsync)
 		if [[ "$os" = "Linux" ]] && [[ "$apache_exists" = "" ]]; then
@@ -232,14 +232,19 @@ function OSInstall()
 			echo "ServerName localhost" >> /etc/apache2/httpd.conf
 			echo -e "\n\e[32mNotice\e[0m: Apache/PHP Installation Complete\n"
 		fi
-		if [[ "$php5_exists" = "" ]]; then
+		if [[ "$php_exists" = "" ]]; then
                         echo -e "\e[31mNotice\e[0m: PHP does not seem to be installed."
                         unset wait
                         echo -e "\e[32m";read -p "Press enter to continue install" wait;echo -e "\e[0m"
                         echo -e "\e[31mNotice\e[0m: Installing PHP5..."
                         while true;
                         do echo -n .;sleep 1;done &
-                        apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-common php5-gd php5-cgi php5-cli php5-fpm php5-dev php5-xmlrpc php5-mysql php5-sybase > /dev/null 2>&1
+			if grep -iE '(stretch|xenial|yakkety|zesty)' /etc/os-release >/dev/null; then
+			    apt-get install -y php7.0 libapache2-mod-php7.0 php7.0-mysql php7.0-common php7.0-gd php7.0-cgi php7.0-cli php7.0-fpm php7.0-dev php7.0-xmlrpc php7.0-sybase
+			else
+			    apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-common php5-gd php5-cgi php5-cli php5-fpm php5-dev php5-xmlrpc php5-mysql php5-sybase
+			fi > /dev/null 2>&1
+
                         kill $!; trap 'kill $!' SIGTERM;
                         echo -e "\n\n\e[32mNotice\e[0m: PHP Installation Complete\n"
                 fi
@@ -257,7 +262,11 @@ function OSInstall()
 			echo -e "\n\n\e[31mNotice\e[0m: Installing MySQL Client and Server..."
 			while true;
                         do echo -n .;sleep 1;done &
-			apt-get install -y mysql-client mysql-server php5-mysql php5-sybase libapache2-mod-auth-mysql libmysqlclient-dev > /dev/null 2>&1
+			if grep -iE '(stretch|xenial|yakkety|zesty)' /etc/os-release >/dev/null; then
+			    apt-get install -y mariadb-client mariadb-server php7.0-mysql php7.0-sybase >/dev/null 2>&1
+			else
+			    apt-get install -y mysql-client mysql-server php5-mysql php5-sybase >/dev/null 2>&1
+			fi > /dev/null 2>&1
 			kill $!; trap 'kill $!' SIGTERM;
 			mysql_install_db > /dev/null 2>&1
 			echo -e "\nInstalling MySQL system tables...\nOK"
@@ -401,7 +410,11 @@ function PackageCheck()
 {
 	echo -e "\e[32mChecking for dependencies and missing packages\n\e[0m"
         if test "$os" = Ubuntu -o "$os" = Debian -o "$os" = Devuan -o "$os" = Raspbian -o "$os" = Linux; then
-	pkgList="apache2 apache2-threaded-dev apache2-utils php5 libapache2-mod-php5 php5-mcrypt php5-common php5-gd php5-cgi php5-cli php5-fpm php5-dev php5-xmlrpc mysql-client mysql-server php5-mysql php5-sybase libapache2-mod-auth-mysql libmysqlclient-dev curl rsync"
+	if grep -iE '(stretch|xenial|yakkety|zesty)' /etc/os-release >/dev/null; then
+	    pkgList="apache2 apache2-utils php7.0 libapache2-mod-php7.0 php7.0-mcrypt php7.0-common php7.0-gd php7.0-cgi php7.0-cli php7.0-fpm php7.0-dev php7.0-xmlrpc mariadb-client mariadb-server php7.0-mysql php7.0-sybase curl rsync"
+	else
+	    pkgList="apache2 apache2-utils php5 libapache2-mod-php5 php5-mcrypt php5-common php5-gd php5-cgi php5-cli php5-fpm php5-dev php5-xmlrpc mysql-client mysql-server php5-mysql php5-sybase curl rsync"
+	fi > /dev/null 2>&1
 	echo -e "\e[31mWARNING\e[0m: Please keep in mind this is not a fool proof process, if you have 3rd party repo's, the automated package installer may fail.\n"
 	for package in $pkgList; do
                 dpkg-query -l $package > /dev/null 2>&1
@@ -636,7 +649,11 @@ function phpversion()
 
 function phpverCheck()
 {
-	phpver=$(php --version|grep "PHP 5"|awk {'print $2'})
+	if grep -iE '(stretch|xenial|yakkety|zesty)' /etc/os-release >/dev/null; then
+	    phpver=$(php --version|grep "PHP 7"|awk {'print $2'})
+	else
+	    phpver=$(php --version|grep "PHP 5"|awk {'print $2'})
+	fi
 
 	if [[ $(phpversion $phpver) < $(phpversion 5.2.0) ]]; then
 		echo -e "\e[0mYou are running PHP Version: \e[031m$phpver\e[0m which is incompatible with this application.\n"
@@ -1801,8 +1818,11 @@ function OSCheckUnattended() {
 		# mysql running?
 		# service mysql status | grep -q "stop/waiting" && { echo "MySQL service not running. Aborting."; exit 1; }
 		# other packages
-		# removed mysql-server from list
-		pkgList="apache2 apache2-threaded-dev apache2-utils php5 libapache2-mod-php5 php5-mcrypt php5-common php5-gd php5-cgi php5-cli php5-fpm php5-dev php5-xmlrpc mysql-client php5-mysql php5-sybase libapache2-mod-auth-mysql libmysqlclient-dev curl"
+		if grep -iE '(stretch|xenial|yakkety|zesty)' /etc/os-release >/dev/null; then
+		    pkgList="apache2 apache2-utils php7.0 libapache2-mod-php7.0 php7.0-mcrypt php7.0-common php7.0-gd php7.0-cgi php7.0-cli php7.0-fpm php7.0-dev php7.0-xmlrpc mariadb-client mariadb-server php7.0-mysql php7.0-sybase curl rsync"
+		else
+		    pkgList="apache2 apache2-utils php5 libapache2-mod-php5 php5-mcrypt php5-common php5-gd php5-cgi php5-cli php5-fpm php5-dev php5-xmlrpc mysql-client mysql-server php5-mysql php5-sybase curl rsync"
+		fi > /dev/null 2>&1
 		for package in $pkgList; do
 			dpkg-query -l "$package" > /dev/null 2>&1 || missingPackage "$package"
 		done
@@ -1837,7 +1857,7 @@ function OSCheckUnattended() {
 		web_service="httpd"
 	fi
 	# check for php > 5.2.0
-	[[ $(phpversion "$(php --version|grep "PHP 5"|awk {'print $2'})") < $(phpversion 5.2.0) ]] && { echo "Installed PHP version is below 5.2.0. Aborting."; exit 1; }
+	[[ $(phpversion "$(php --version|grep -E "PHP [57]"|awk {'print $2'})") < $(phpversion 5.2.0) ]] && { echo "Installed PHP version is below 5.2.0. Aborting."; exit 1; }
 	# skipping checkIPtables. Admin should know what he is doing.
 	# same for localhostChk.
 
