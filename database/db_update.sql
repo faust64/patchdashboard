@@ -128,6 +128,8 @@ INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('29'
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('30','24',3,'2017-08-01');
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('31','1',7,'2020-05-01');
 INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('32','8',8,'2020-05-01');
+INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('33','9',2,'2022-06-30 00:00:00');
+INSERT IGNORE INTO distro_version(id,version_num,distro_id,eol_date) VALUES('34','9',8,'2022-06-30 00:00:00');
 DROP table distro_version_old;
 
 DROP TABLE IF EXISTS patches_old;
