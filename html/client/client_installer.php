@@ -45,7 +45,7 @@ if [[ \"$?\" != \"0\" ]]; then
 	min=$(expr `ip addr|grep -v 127.0.0|awk '/inet /{print $2;exit}'` : '.*\.\([0-9]*\)/.*')
 	min=$(expr \$min % 60)
 	cat <<EOF >/etc/cron.d/patch-manager
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 \$min * * * * root \${client_path}check-in.sh >/dev/null 2>&1
 EOF
 else
